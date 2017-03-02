@@ -1,4 +1,4 @@
-Getting the data
+I-) Getting the Data
 
 DataFiles <- function(filesDirectory = "./") { 
 #        if (!file.exists(filesDirectory)) {
@@ -20,6 +20,7 @@ DataFiles("/data")
 
 getwd()
 
+II-) Cleaning Data
 
 # Delete columns with all missing values
 trainingset<-trainingset[,colSums(is.na(trainingset)) == 0]
@@ -29,11 +30,71 @@ testingset <-testingset[,colSums(is.na(testingset)) == 0]
 trainingset   <-trainingset[,-c(1:7)]
 testingset <-testingset[,-c(1:7)]
 
-# partition the data so that 75% of the training dataset into training and the remaining 25% to testing
-traintrainset <- createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+# Partioning Training data set into two data sets, 50% for myTraining, 50% for myTesting:
+traintrainset <- createDataPartition(y=trainingset$classe, p=0.50, list=FALSE)
 TrainTrainingSet <- trainingset[traintrainset, ] 
 TestTrainingSet <- trainingset[-traintrainset, ]
 
 # The variable "classe" contains 5 levels: A, B, C, D and E. A plot of the outcome variable will allow us to see the frequency of each levels in the TrainTrainingSet data set and # compare one another.
 
 plot(TrainTrainingSet$classe, col="yellow", main="Plot of levels of variable classe within the TrainTrainingSet data set", xlab="classe", ylab="Frequency")
+
+In order to ensure proper functioning of Decision Trees and especially RandomForest Algorithm with the Test data set (data set provided), we need to coerce the data into the same type.
+
+for (i in 1:length(testing) ) {
+        for(j in 1:length(myTraining)) {
+        if( length( grep(names(myTraining[i]), names(testing)[j]) ) ==1)  {
+            class(testing[j]) <- class(myTraining[i])
+        }      
+    }      
+}
+#And to make sure Coertion really worked, simple smart ass technique:
+testing <- rbind(myTraining[2, -58] , testing) #note row 2 does not mean anything, this will be removed right.. now:
+testing <- testing[-1,]
+Using ML algorithms for prediction: Decision Tree
+modFitA1 <- rpart(classe ~ ., data=myTraining, method="class")
+Note: to view the decision tree with fancy run this command:
+
+fancyRpartPlot(modFitA1)
+Predicting:
+
+predictionsA1 <- predict(modFitA1, myTesting, type = "class")
+(Moment of truth) Using confusion Matrix to test results:
+
+confusionMatrix(predictionsA1, myTesting$classe)
+Using ML algorithms for prediction: Random Forests
+modFitB1 <- randomForest(classe ~. , data=myTraining)
+Predicting in-sample error:
+
+predictionsB1 <- predict(modFitB1, myTesting, type = "class")
+(Moment of truth) Using confusion Matrix to test results:
+
+confusionMatrix(predictionsB1, myTesting$classe)
+Generating Files to submit as answers for the Assignment:
+Finally, using the provided Test Set out-of-sample error.
+
+For Random Forests we use the following formula, which yielded a much better prediction in in-sample:
+
+predictionsB2 <- predict(modFitB1, testing, type = "class")
+Function to generate files with predictions to submit for assignment
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predictionsB2)
+
+
+Submission
+Here is the final outcome based on the Prediction Model 2 (Random Forest) applied against the Testing dataset
+
+# predict outcome levels on the original Testing data set using Random Forest algorithm
+predictfinal <- predict(model2, testingset, type="class")
+predictfinal
+##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
+## Levels: A B C D E
