@@ -60,20 +60,14 @@ testing <- testing[, -(1:5)]
 fitControl <- trainControl(method="cv", number=3, verboseIter=F)  
 fit <- train(classe ~ ., data=training, method="rf", trControl=fitControl)  
 
-prediction <- predict(fit, newdata=testing)  
 prediction <- as.character(prediction)  
-prediction <- predict(model2, testingset, type="class")
 pml_write_files <- function(x) {  
-        n <- length(x)  
-        for(i in 1:n) {  
-                filename <- paste0("problem_id_", i, ".txt")  
-                write.table(x[i], file=filename, quote=F, row.names=F, col.names=F)  
-        }  
-}  
++     n <- length(x)  
++     for(i in 1:n) {  
++         filename <- paste0("problem_id_", i, ".txt")  
++         write.table(x[i], file=filename, quote=F, row.names=F, col.names=F)  
++     }  
++ }  
 pml_write_files(prediction)
-
-
-
-##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
-##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
-## Levels: A B C D E
+prediction = as.data.frame(prediction)
+prediction
