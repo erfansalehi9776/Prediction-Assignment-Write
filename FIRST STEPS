@@ -1,0 +1,39 @@
+Getting the data
+
+DataFiles <- function(filesDirectory = "./") { 
+#        if (!file.exists(filesDirectory)) {
+#      dir.create(filesDirectory)
+#           }
+#        testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+#        trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+#        trainFile <- "train.csv"
+#        testFile <- "test.csv"
+#   trainFilePath <- paste(filesDirectory, trainFile, sep = "/")
+#        testFilePath <- paste(filesDirectory, testFile, sep = "/")
+#        download.file(trainUrl, destfile = trainFilePath, method="curl")
+#        download.file(testUrl, destfile = testFilePath, method="curl")
+#        training <- read.csv(trainFilePath, na.strings=c("NA","#DIV/0!",""))
+#        testing <- read.csv(testFilePath, na.strings=c("NA","#DIV/0!",""))
+#}
+
+DataFiles("/data")
+
+getwd()
+
+
+# Delete columns with all missing values
+trainingset<-trainingset[,colSums(is.na(trainingset)) == 0]
+testingset <-testingset[,colSums(is.na(testingset)) == 0]
+
+# Delete variables are irrelevant to our current project: user_name, raw_timestamp_part_1, raw_timestamp_part_,2 cvtd_timestamp, new_window, and  num_window (columns 1 to 7). 
+trainingset   <-trainingset[,-c(1:7)]
+testingset <-testingset[,-c(1:7)]
+
+# partition the data so that 75% of the training dataset into training and the remaining 25% to testing
+traintrainset <- createDataPartition(y=trainingset$classe, p=0.75, list=FALSE)
+TrainTrainingSet <- trainingset[traintrainset, ] 
+TestTrainingSet <- trainingset[-traintrainset, ]
+
+# The variable "classe" contains 5 levels: A, B, C, D and E. A plot of the outcome variable will allow us to see the frequency of each levels in the TrainTrainingSet data set and # compare one another.
+
+plot(TrainTrainingSet$classe, col="yellow", main="Plot of levels of variable classe within the TrainTrainingSet data set", xlab="classe", ylab="Frequency")
