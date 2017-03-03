@@ -1,21 +1,4 @@
-I-) Getting the Data
-
-DataFiles <- function(filesDirectory = "./") { 
-       if (!file.exists(filesDirectory)) {
-     dir.create(filesDirectory)
-          }
-       testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
-       trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
-       trainFile <- "train.csv"
-       testFile <- "test.csv"
-   trainFilePath <- paste(filesDirectory, trainFile, sep = "/")
-       testFilePath <- paste(filesDirectory, testFile, sep = "/")
-        download.file(trainUrl, destfile = trainFilePath, method="curl")
-        download.file(testUrl, destfile = testFilePath, method="curl")
-        training <- read.csv(trainFilePath, na.strings=c("NA","#DIV/0!",""))
-        testing <- read.csv(testFilePath, na.strings=c("NA","#DIV/0!",""))
-}
-
+#I-) Essential Packages
 require(caret)
 require(lattice)
 require(ggplot2)
@@ -25,49 +8,63 @@ require(RColorBrewer)
 require(rattle)
 require(randomForest)
 
+#II-) Getting the Data
+#Load the data
 trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"   
 testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv" 
+
+#Read training and testing data
 training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))  
 testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
-set.seed(1300)  
-inTrain <- createDataPartition(y=training$classe, p=0.7, list=FALSE)    
+
+#III-) Studying the Data
+names(training)
+str(training)
+summary(training)
+summary(training$classe)
+
+#III-) Cleaning the Data
+#Remove columns that are obviously not predictors (X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp), which happen to be the first five variables
+training <- training[, -(1:5)]
+
+# Remove variables with near zero variance
+nzv <- nearZeroVar(training)
+training <- training[, -nzv]
+
+# Remove variables that are almost always NA
+mostlyNA <- sapply(training, function(x) mean(is.na(x))) > 0.95
+training <- training[, mostlyNA==F]
+
+# The data after cleaning
+dim(training)
+
+#IV-) Data spliting
+#In order to get out-of-sample errors, we split the cleaned training set trainData into a training set (train, 50%) for prediction and a validation set (valid 75%) to compute the out-of-sample errors.
+set.seed(20000)
+inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
 myTraining <- training[inTrain, ]; myTesting <- training[-inTrain, ]  
-dim(myTraining); dim(myTesting) 
-[1] 13737   160
-[1] 5885  160
-nzv <- nearZeroVar(myTraining)  
-myTraining <- myTraining[, -nzv]  
-myTesting <- myTesting[, -nzv]  
-mostlyNA <- sapply(myTraining, function(x) mean(is.na(x))) > 0.95  
-myTraining <- myTraining[, mostlyNA==F]  
-myTesting <- myTesting[, mostlyNA==F]  
-myTraining <- myTraining[, -(1:5)]  
-myTesting <- myTesting[, -(1:5)]  
-fitControl <- trainControl(method="cv", number=3, verboseIter=F)  
-fit <- train(classe ~ ., data=myTraining, method="rf", trControl=fitControl)
-fit$finalModel  
+dim(myTraining)
+dim(myTesting) 
 
-prediction <- predict(fit, newdata=myTesting)  
-confusionMatrix(myTesting$classe, prediction)  
-nzv <- nearZeroVar(training)  
-training <- training[, -nzv]  
-testing <- testing[, -nzv]  
-mostlyNA <- sapply(training, function(x) mean(is.na(x))) > 0.95  
-training <- training[, mostlyNA==F]  
-testing <- testing[, mostlyNA==F]  
-training <- training[, -(1:5)]  
-testing <- testing[, -(1:5)] 
-fitControl <- trainControl(method="cv", number=3, verboseIter=F)  
-fit <- train(classe ~ ., data=training, method="rf", trControl=fitControl)  
+#V-) CROSS VALIDATION
+# instruct train to use 3-fold CV to select optimal tuning parameters
+fitControl <- trainControl(method="cv", number=3, verboseIter=F)
+# fit model on MyTraining data
+fit <- train(classe ~ ., data=MyTraining, method="rf", trControl=fitControl)
+# print final model to see tuning parameters it chose
+fit$finalModel
+# use model to predict classe in validation set (MyTesting)
+prediction <- predict(fit, newdata=MyTesting)
 
-prediction <- as.character(prediction)  
-pml_write_files <- function(x) {  
-+     n <- length(x)  
-+     for(i in 1:n) {  
-+         filename <- paste0("problem_id_", i, ".txt")  
-+         write.table(x[i], file=filename, quote=F, row.names=F, col.names=F)  
-+     }  
-+ }  
-pml_write_files(prediction)
-prediction = as.data.frame(prediction)
-prediction
+#VI-) ESTIMATE OF OUT-OF-SAMPLE-ERROR
+confusionMatrix(MyTesting$classe, preds)
+
+#VII-) VALIDATE THE MODEL
+imps <- varImp(fit)
+imps
+
+#VIII-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
+finalprediction <- predict(fit, newdata=testing)
+finalprediction
+
+
