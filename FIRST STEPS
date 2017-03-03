@@ -31,7 +31,7 @@ training <- training[, -(1:5)]
 nzv <- nearZeroVar(training)
 training <- training[, -nzv]
 
-# Remove variables that are almost always NA
+# Remove columns from training and testing data set where NA is more than 95 percent
 mostlyNA <- sapply(training, function(x) mean(is.na(x))) > 0.95
 training <- training[, mostlyNA==F]
 
@@ -39,7 +39,7 @@ training <- training[, mostlyNA==F]
 dim(training)
 
 #V-) Data spliting
-#In order to get out-of-sample errors, we split the cleaned training set trainData into a training set (train, 50%) for prediction and a validation set (valid 75%) to compute the out-of-sample errors.
+#In order to get out-of-sample errors, we split the cleaned training set trainData into a training set (train, 75%) for prediction and a validation set (valid 75%) to compute the out-of-sample errors.
 set.seed(20000)
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
 myTraining <- training[inTrain, ]
