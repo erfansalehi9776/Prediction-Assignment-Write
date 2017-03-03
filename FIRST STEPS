@@ -68,3 +68,4 @@ imps
 finalprediction <- predict(fit, newdata=testing)
 finalprediction
 
+
