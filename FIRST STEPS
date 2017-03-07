@@ -45,7 +45,7 @@ training <- training[, mostlyNA==F]
 dim(training)
 
 #V-) Data spliting
-#In order to get out-of-sample errors, we split the cleaned training set trainData into a training set (train, 75%) for prediction and a validation set (valid 75%) to compute the out-of-sample errors.
+#In order to get out-of-sample errors, split the training into train (75%) and validate (25%) subsets:
 set.seed(20000)
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
 myTraining <- training[inTrain, ]
