@@ -14,22 +14,28 @@ trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
 testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv" 
 
 #Read training and testing data
-training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))  
-testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+trainbrute <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))  
+testbrute <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
 
 #III-) Studying the Data
-names(training)
-str(training)
-summary(training)
-summary(training$classe)
+names(trainbrute)
+str(trainbrute)
+summary(trainbrute)
+dim(trainbrute)
+table(trainbrute$classe)
+prop.table(table(trainbrute$classe))
 
 #IV-) Cleaning the Data
-#Remove columns that are obviously not predictors (X, user_name, raw_timestamp_part_1, raw_timestamp_part_2, cvtd_timestamp), which happen to be the first five variables
-training <- training[, -(1:5)]
+#Remove columns that are not predictors, which are the the six first columns 
+training <- trainbrute[, 7:160]
+testing  <- testbrute[, 7:160]
 
 # Remove variables with near zero variance
-nzv <- nearZeroVar(training)
-training <- training[, -nzv]
+nzv <- nearZeroVar(training, saveMetrics=TRUE)
+training <- training[,nzv$nzv==FALSE]
+
+nzv <- nearZeroVar(testing, saveMetrics=TRUE)
+testing <- testing[,nzv$nzv==FALSE]
 
 # Remove columns from training and testing data set where NA is more than 95 percent
 mostlyNA <- sapply(training, function(x) mean(is.na(x))) > 0.95
