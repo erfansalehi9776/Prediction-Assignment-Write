@@ -48,23 +48,24 @@ dim(training)
 #In order to get out-of-sample errors, split the training into train (75%) and validate (25%) subsets:
 set.seed(20000)
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
-myTraining <- training[inTrain, ]
-myTesting <- training[-inTrain, ]  
-dim(myTraining)
-dim(myTesting) 
+NEOTraining <- training[inTrain, ]
+NEOTesting <- training[-inTrain, ]  
+dim(NEOTraining)
+dim(NEOTesting) 
 
 #VI-) CROSS VALIDATION
-# instruct train to use 3-fold CV to select optimal tuning parameters
+# Re-fit model using complete training set (training) by using CV 3 times in order to select the optimal tuning parameters
 fitControl <- trainControl(method="cv", number=3, verboseIter=F)
+
 # fit model on myTraining data
-fit <- train(classe ~ ., data=myTraining, method="rf", trControl=fitControl)
+fit <- train(classe ~ ., data=NEOTraining, method="rf", trControl=fitControl)
 # print final model to see tuning parameters it chose
 fit$finalModel
-# use model to predict classe in validation set (myTesting)
+# use model to predict classe in validation set (NEOTesting)
 prediction <- predict(fit, newdata=myTesting)
 
 #VII-) ESTIMATE OF OUT-OF-SAMPLE-ERROR
-confusionMatrix(myTesting$classe, prediction)
+confusionMatrix(NEOTesting$classe, prediction)
 
 #VIII-) VALIDATE THE MODEL
 imps <- varImp(fit)
