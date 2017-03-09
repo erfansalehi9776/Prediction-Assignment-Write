@@ -54,7 +54,7 @@ NEOTesting <- training[-inTrain, ]
 dim(NEOTraining)
 dim(NEOTesting) 
 
-#VI-) Prediction Models
+#IV-) Prediction Models
 
 DECISION TREE
 Fit model on NEOTraining data
@@ -76,7 +76,7 @@ predictionRF <- predict(fitRF, newdata=NEOTesting)
 Estimate the errors of the prediction algorithm in the Random Forest
 confusionMatrix(NEOTesting$classe, predictionRF)
 
-#IV-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
+#V-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
 # Perform prediction
 predictSubmission <- predict(fitRF, testing, type="class")
 predictSubmission
