@@ -1,67 +1,67 @@
 #I-) Essential Packages
-require(caret)
-require(lattice)
-require(ggplot2)
-require(rpart)
-require(rpart.plot)
-require(RColorBrewer)
-require(rattle)
-require(randomForest)
+IscaretInstalled <- require("caret")
+if(!IscaretInstalled){
+    install.packages("caret")
+    library("caret")
+    }
+    
+if(!IsrandomForestInstalled){
+    install.packages("randomForest")
+    library("randomForest")
+    }
 
-#II-) Getting the Data
-#Load the data
+IsRpartInstalled <- require("rpart")    
+    
+if(!IsRpartInstalled){
+    install.packages("rpart")
+    library("rpart")
+    }
+
+IsRpartPlotInstalled <- require("rpart.plot")
+if(!IsRpartPlotInstalled){
+    install.packages("rpart.plot")
+    library("rpart.plot")
+    }
+
+Set seed for reproducability
+set.seed(20000)
+
+#II-) Data Processing
+Load the data
 trainUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"   
 testUrl <- "http://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv" 
 
-#Read training and testing data
-trainbrute <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))  
-testbrute <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
+Cleaning data 
+training <- read.csv(url(trainUrl), na.strings=c("NA","#DIV/0!",""))  
+testing <- read.csv(url(testUrl), na.strings=c("NA","#DIV/0!",""))
 
-#III-) Studying the Data
-names(trainbrute)
-str(trainbrute)
-summary(trainbrute)
-dim(trainbrute)
-table(trainbrute$classe)
-prop.table(table(trainbrute$classe))
+Remove variables with near zero variance
+training<-training[,colSums(is.na(training)) == 0]
+testing <-testing[,colSums(is.na(testing)) == 0]
 
-#IV-) Cleaning the Data
-#Remove columns that are not predictors, which are the the six first columns 
-training <- trainbrute[, 7:160]
-testing  <- testbrute[, 7:160]
-
-# Remove variables with near zero variance
-nzv <- nearZeroVar(training, saveMetrics=TRUE)
-training <- training[,nzv$nzv==FALSE]
-
-nzv <- nearZeroVar(testing, saveMetrics=TRUE)
-testing <- testing[,nzv$nzv==FALSE]
-
-# Remove columns from training and testing data set where NA is more than 95 percent
-mostlyNA <- sapply(training, function(x) mean(is.na(x))) > 0.95
-training <- training[, mostlyNA==F]
+Remove columns that are not predictors, which are the the seven first columns
+training   <-training[,-c(1:7)]
+testing <-testing[,-c(1:7)]
 
 # The data after cleaning
 dim(training)
 
-#V-) Data spliting
-#In order to get out-of-sample errors, split the training into train (75%) and validate (25%) subsets:
-set.seed(20000)
+#V-) Cross-validation
+In order to get out-of-sample errors, split the training data in training (75%) and testing (25%) data) subsets:
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
 NEOTraining <- training[inTrain, ]
 NEOTesting <- training[-inTrain, ]  
 dim(NEOTraining)
 dim(NEOTesting) 
 
-#VI-) CROSS VALIDATION
-# Re-fit model using complete training set (training) by using CV 3 times in order to select the optimal tuning parameters
-fitControl <- trainControl(method="cv", number=3, verboseIter=F)
+#VI-) Prediction Models
 
-# fit model on NEOTraining data
-fit <- train(classe ~ ., data=NEOTraining, method="rf", trControl=fitControl)
-# print final model to see tuning parameters it chose
-fit$finalModel
-# use model to predict classe in validation set (NEOTesting)
+DECISION TREE
+
+Fit model on NEOTraining data
+fit <- rpart(classe ~ ., data=NEOTraining, method="class")
+
+Use model to predict class in validation set (NEOTesting)
 prediction <- predict(fit, newdata=NEOTesting)
 
 #VII-) ESTIMATE OF OUT-OF-SAMPLE-ERROR
@@ -72,7 +72,8 @@ imps <- varImp(fit)
 imps
 
 #IX-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
-finalprediction <- predict(fit, newdata=testing)
-finalprediction
+# Perform prediction
+predictSubmission <- predict(fit, testing, type="class")
+predictSubmission
 
 
