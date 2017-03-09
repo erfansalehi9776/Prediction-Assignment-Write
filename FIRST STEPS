@@ -78,7 +78,7 @@ confusionMatrix(NEOTesting$classe, predictionRF)
 
 #IV-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
 # Perform prediction
-predictSubmission <- predict(fit, testing, type="class")
+predictSubmission <- predict(fitRF, testing, type="class")
 predictSubmission
 
 
