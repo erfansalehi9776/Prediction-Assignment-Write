@@ -46,7 +46,7 @@ testing <-testing[,-c(1:7)]
 # The data after cleaning
 dim(training)
 
-#V-) Cross-validation
+#III-) Cross-validation
 In order to get out-of-sample errors, split the training data in training (75%) and testing (25%) data) subsets:
 inTrain <- createDataPartition(y=training$classe, p=0.75, list=FALSE)    
 NEOTraining <- training[inTrain, ]
@@ -57,21 +57,26 @@ dim(NEOTesting)
 #VI-) Prediction Models
 
 DECISION TREE
-
 Fit model on NEOTraining data
-fit <- rpart(classe ~ ., data=NEOTraining, method="class")
+fitDT <- rpart(classe ~ ., data=NEOTraining, method="class")
 
 Use model to predict class in validation set (NEOTesting)
-prediction <- predict(fit, newdata=NEOTesting)
+predictionDT <- predict(fitDT, newdata=NEOTesting)
 
-#VII-) ESTIMATE OF OUT-OF-SAMPLE-ERROR
-confusionMatrix(NEOTesting$classe, prediction)
+Estimate the errors of the prediction algorithm in the Decision Tree model
+confusionMatrix(NEOTesting$classe, predictionDT)
 
-#VIII-) VALIDATE THE MODEL
-imps <- varImp(fit)
-imps
+RANDOM FOREST
+Fit model on NEOTraining data
+fitRF <- randomForest(classe ~ ., data=subTraining, method="class")
 
-#IX-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
+Use model to predict class in validation set (NEOTesting)
+predictionRF <- predict(fitRF, newdata=NEOTesting)
+
+Estimate the errors of the prediction algorithm in the Random Forest
+confusionMatrix(NEOTesting$classe, predictionRF)
+
+#IV-) TEST THE MODEL TO PREDICT 20 DIFFERENT TEST CASES
 # Perform prediction
 predictSubmission <- predict(fit, testing, type="class")
 predictSubmission
