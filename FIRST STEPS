@@ -57,12 +57,12 @@ dim(NEOTesting)
 # Re-fit model using complete training set (training) by using CV 3 times in order to select the optimal tuning parameters
 fitControl <- trainControl(method="cv", number=3, verboseIter=F)
 
-# fit model on myTraining data
+# fit model on NEOTraining data
 fit <- train(classe ~ ., data=NEOTraining, method="rf", trControl=fitControl)
 # print final model to see tuning parameters it chose
 fit$finalModel
 # use model to predict classe in validation set (NEOTesting)
-prediction <- predict(fit, newdata=myTesting)
+prediction <- predict(fit, newdata=NEOTesting)
 
 #VII-) ESTIMATE OF OUT-OF-SAMPLE-ERROR
 confusionMatrix(NEOTesting$classe, prediction)
