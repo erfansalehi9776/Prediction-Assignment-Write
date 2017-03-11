@@ -17,12 +17,6 @@ if(!IsRpartInstalled){
     library("rpart")
     }
 
-IsRpartInstalled <- require("rpart.plot")        
-if(!IsRpartInstalled){
-    install.packages("rpart.plott")
-    library("rpart.plot")
-    }
-
 Set seed for reproducability
 set.seed(20000)
 
@@ -66,9 +60,6 @@ predictionDT <- predict(fitDT, NEOTesting, type = "class")
 
 Estimate the errors of the prediction algorithm in the Decision Tree model
 confusionMatrix(NEOTesting$classe, predictionDT)
-
-Plot Result
-fancyRpartPlot(fitDT)
 
 RANDOM FOREST
 Fit model on NEOTraining data
