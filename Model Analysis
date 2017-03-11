@@ -70,6 +70,9 @@ predictionDT <- predict(fitDT, NEOTesting, type = "class")
 Estimate the errors of the prediction algorithm in the Decision Tree model
 confusionMatrix(NEOTesting$classe, predictionDT)
 
+Plot Result
+fancyRpartPlot(fitDT)
+
 RANDOM FOREST
 Fit model on NEOTraining data
 fitRF <- randomForest(classe ~ ., data=NEOTraining, method="class")
